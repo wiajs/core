@@ -1,7 +1,6 @@
 /**
  * 代码转换时，控制语法转换与功能补全
- * 目标 node，超es6语法转换，不补全
- * 用于默认转换和eslint
+ * umd 格式，es5语法，runtime 补全
  */
 const loose = true;
 
@@ -19,12 +18,13 @@ const presets = [
     {
       loose,
       // targets: 'defaults', // '> 0.5%, last 2 versions, Firefox ESR, not dead'
-      targets: {
-        // 浏览器设置规则请参加：https://github.com/browserslist/browserslist
-        // browsers: ['>1%', 'last 3 versions', 'Firefox ESR', 'ie >= 11'],
-        node: 'current', // 按系统安装的node版本作为目标，后台项目
-        // node: '14.0', // 指定兼容到node版本，避免低版本node无法运行，后端项目需要
-      },
+      // targets: 'defaults and supports es6-module', //
+      // targets: {
+      // 浏览器设置规则请参加：https://github.com/browserslist/browserslist
+      // browsers: ['>1%', 'last 2 versions', 'Firefox ESR', 'ie >= 11'],
+      // node: 'current', // 按系统安装的node版本作为目标，后台项目
+      // node: '14.0', // 指定兼容到node版本，避免低版本node无法运行，后端项目需要
+      // },
       /*
       1、用于补全，false不补全，由外部polyfill或runtime corejs补全，否则运行报错
       2、库、后端无需补全，但需开启runtime的 helpers，引用辅助函数代替内置，减少体积
@@ -47,11 +47,6 @@ const presets = [
 ];
 
 const plugins = [
-  ['@babel/plugin-proposal-class-properties', {loose}],
-  ['@babel/plugin-proposal-private-methods', {loose}],
-  ['@babel/plugin-proposal-function-bind'],
-  ['@babel/plugin-proposal-nullish-coalescing-operator'],
-  ['@babel/plugin-proposal-optional-chaining'],
   [
     /* 
     1、将语法转换用到的辅助函数（包括异步await）从内置改为外部runtime引用，避免重复代码
@@ -83,9 +78,9 @@ module.exports = {
   presets,
   plugins,
   only: ['./src'],
-  ignore: ['./dist', './lib'],
+  ignore: ['./dist'],
   sourceMaps: false, // boolean | "inline" | "both"
-  sourceType: 'unambiguous', // "script" | "module" | "unambiguous" 缺省 "module"
-  comments: true, // 保留备注 缺省 true
+  // sourceType: 'unambiguous', // "script" | "module" | "unambiguous" 缺省 "module"
+  comments: false, // 保留备注 缺省 true
   minified: false, // Default: false，压缩代码
 };

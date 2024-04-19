@@ -62,7 +62,7 @@ export default class Page extends Event {
   load(param) {
     // $.assign(this.data, param);
     this.emit('local::load pageLoad', param);
-    this.emit('pageLoad', this);
+    this.emit('pageLoad', this, param);
   }
 
   /**
@@ -78,7 +78,7 @@ export default class Page extends Event {
     this.init();
     this.emit('local::ready', view, param, back);
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageReady', this);
+    this.emit('pageReady', this, view, param, back);
   }
 
   /**
@@ -101,7 +101,7 @@ export default class Page extends Event {
     if (this.reset) this.reset();
     this.emit('local::show', view, param);
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageShow', this);
+    this.emit('pageShow', this, view, param);
   }
 
   // 回退显示已加载的页面
@@ -114,18 +114,24 @@ export default class Page extends Event {
 
     this.emit('local::back', view, param);
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageBack', this);
+    this.emit('pageBack', this, view, param);
+  }
+
+  change(view, param, lastParam) {
+    this.emit('local::change', view, param, lastParam);
+    // 向上触发跨页面事件，存在安全问题
+    this.emit('pageChange', this, view, param, lastParam);
   }
 
   hide(view) {
     this.emit('local::hide', view);
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageHide', this);
+    this.emit('pageHide', this, view);
   }
 
   unload(view) {
     this.emit('local::unload', view);
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageUnload', this);
+    this.emit('pageUnload', this, view);
   }
 }

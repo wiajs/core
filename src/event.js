@@ -50,28 +50,10 @@ export default class Event {
         handler,
       };
 
-      // 应用事件
-      if (event.includes('app::')) {
-        let page = null;
-        if ($.isPage(m)) page = m;
-        else if ($.isPage(m?.page)) page = m.page;
-        else if ($.isPage(m?.parent)) page = m.parent;
+      // 对象自身事件
+      if (!m.eventsListeners[event]) m.eventsListeners[event] = [];
 
-        if (page && page.app && $.isApp(page.app)) {
-          lis.owner = page.owner;
-          lis.appName = page.appName;
-          const {app} = page;
-
-          const ev = event.replace('app::', '');
-          if (!app.eventsListeners[ev]) app.eventsListeners[ev] = [];
-          app.eventsListeners[ev][method](lis);
-        }
-      } else {
-        // 对象自身事件
-        if (!m.eventsListeners[event]) m.eventsListeners[event] = [];
-
-        m.eventsListeners[event][method](lis);
-      }
+      m.eventsListeners[event][method](lis);
     });
 
     return m;
@@ -118,8 +100,7 @@ export default class Event {
           const arr = m.eventsListeners[event];
           for (let i = arr.length - 1; i >= 0; i--) {
             const lis = arr[i];
-            if (lis.handler === handler || lis.handler?.proxy === handler)
-              arr.splice(i, 1);
+            if (lis.handler === handler || lis.handler?.proxy === handler) arr.splice(i, 1);
           }
         }
       });
@@ -174,7 +155,7 @@ export default class Event {
     const eventsArray = Array.isArray(events) ? events : events.split(' ');
 
     // 本对象事件
-    // ['local:event'] or ['.event']，不向父组件传递
+    // ['local::event'] or ['.event']，不向父组件传递
     const selfEvents = eventsArray.map(ev => ev.replace(/local::|^[.]/, ''));
 
     // 非本对象事件，向上传递时，转换为对象，记录来源
@@ -194,24 +175,20 @@ export default class Event {
       }
     }
 
-    // 记录page属性，标记事件来源，冒泡到app时判断是否触发本页面应用事件
-    if (parentEvents && $.isPage(m)) {
-      parentEvents.owner = m?.owner;
-      parentEvents.appName = m?.appName;
-    }
-
     // 调用对象事件函数，父对象emit后，调用父对象事件函数
     selfEvents.forEach(ev => {
       if (m.eventsListeners && m.eventsListeners[ev]) {
         const handlers = [];
         m.eventsListeners[ev].forEach(lis => {
-          // 应用事件，需判断所有者
-          if (lis.owner && lis.appName) {
-            // 同一html页面运行多个应用页面层时，只有所有者、应用名称相同才能触发跨页面事件，避免跨应用事件安全问题。
-            // 页面冒泡到应用事件
-            if (pop && lis.owner === ev.owner && lis.appName === ev.appName)
-              handlers.push(lis.handler);
-          } else handlers.push(lis.handler);
+          // 一个页面，只有一个应用，不可能有多个应用
+          // // 应用事件，需判断所有者
+          // if (lis.owner && lis.appName) {
+          //   // 同一html页面运行多个应用页面层时，只有所有者、应用名称相同才能触发跨页面事件，避免跨应用事件安全问题。
+          //   // 页面冒泡到应用事件
+          //   if (pop && lis.owner === ev.owner && lis.appName === ev.appName)
+          //     handlers.push(lis.handler);
+          // } else
+          handlers.push(lis.handler);
         });
 
         // 由 window 对象异步调用，而不是事件对象直接调用
