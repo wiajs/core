@@ -15,7 +15,7 @@ if (!fs.existsSync(out)) {
 }
 
 /**
- * É¾³ýÒÑÓÐ·¢²¼ÎÄ¼þ£¬È«²¿ÖØÐÂÉú³É
+ * åˆ é™¤å·²æœ‰å‘å¸ƒæ–‡ä»¶ï¼Œå…¨éƒ¨é‡æ–°ç”Ÿæˆ
  * @returns
  */
 async function clean(cb) {
@@ -26,7 +26,7 @@ async function clean(cb) {
 }
 
 /**
- * Í¬Ê±Éú³Éumd¡¢cjs¡¢esm ÈýÖÖ¸ñÊ½Êä³öÎÄ¼þ
+ * åŒæ—¶ç”Ÿæˆumdã€cjsã€esm ä¸‰ç§æ ¼å¼è¾“å‡ºæ–‡ä»¶
  */
 const buildAll = gulp.series(clean, cb => {
   console.log('start build ...');
@@ -34,7 +34,7 @@ const buildAll = gulp.series(clean, cb => {
 });
 
 /**
- * ½öÉú³Écjs ¸ñÊ½
+ * ä»…ç”Ÿæˆcjs æ ¼å¼
  */
 gulp.task('cjs', cb => {
   console.log('dev cjs...');
@@ -44,7 +44,7 @@ gulp.task('cjs', cb => {
 });
 
 /**
- * ½öÉú³É esm ¸ñÊ½
+ * ä»…ç”Ÿæˆ esm æ ¼å¼
  */
 gulp.task('esm', cb => {
   console.log('dev esm...');
@@ -54,7 +54,7 @@ gulp.task('esm', cb => {
 });
 
 /**
- * ½öÉú³É umd ¸ñÊ½
+ * ä»…ç”Ÿæˆ umd æ ¼å¼
  */
 gulp.task('umd', cb => {
   console.log('dev umd...');

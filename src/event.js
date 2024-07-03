@@ -175,6 +175,12 @@ export default class Event {
       }
     }
 
+    // 记录page属性，标记事件来源，冒泡到app时判断是否触发本页面应用事件
+    // if (parentEvents && $.isPage(m)) {
+    //    parentEvents.owner = m?.owner;
+    //    parentEvents.appName = m?.appName;
+    // }
+
     // 调用对象事件函数，父对象emit后，调用父对象事件函数
     selfEvents.forEach(ev => {
       if (m.eventsListeners && m.eventsListeners[ev]) {

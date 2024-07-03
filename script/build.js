@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const zlib = require('node:zlib');
 const path = require('node:path');
-const { minify } = require('terser');
+const {minify} = require('terser');
 const rollup = require('rollup');
 const {extname} = path;
 
@@ -44,7 +44,7 @@ function onwarn({loc, frame, message}) {
 }
 
 /**
- * ¸ù¾İÅäÖÃÊä³ö´ò°üÎÄ¼ş
+ * æ ¹æ®é…ç½®è¾“å‡ºæ‰“åŒ…æ–‡ä»¶
  * @param {*}
  */
 async function buildEntry({input, output}) {
@@ -54,15 +54,14 @@ async function buildEntry({input, output}) {
     bundle = await rollup.rollup(input);
 
     const {file, banner, format} = output;
-    // bundle.generate(output); // ²»Ğ´ÈëÎÄ¼ş
-    const rt = await bundle.write(output); // Ğ´ÈëÎÄ¼ş
+    // bundle.generate(output); // ä¸å†™å…¥æ–‡ä»¶
+    const rt = await bundle.write(output); // å†™å…¥æ–‡ä»¶
 
     const {code} = rt.output[0];
-    report(code, file); // ÎÄ¼ş³ß´ç
+    report(code, file); // æ–‡ä»¶å°ºå¯¸
 
-    // Éú²úÊä³ö Ñ¹Ëõ°æ±¾
+    // ç”Ÿäº§è¾“å‡º å‹ç¼©ç‰ˆæœ¬
     if (format === 'umd') min(code, banner, file);
-    
   } catch (e) {
     console.error(`buildEntry exp:${e.message}`);
   }
@@ -70,9 +69,8 @@ async function buildEntry({input, output}) {
   if (bundle) await bundle.close();
 }
 
-
 /**
- * Ñ¹ËõÊä³öµ½ÎÄ¼ş
+ * å‹ç¼©è¾“å‡ºåˆ°æ–‡ä»¶
  * @param {*} code
  * @param {*} banner
  * @param {*} file
@@ -82,39 +80,37 @@ async function min(code, banner, file) {
   let R = null;
 
   try {
-        let {code: minCode} = await minify(code, {
-            sourceMap: false,
-      toplevel: true, // É¾³ı¶¥²ã×÷ÓÃÓòÖĞÎ´ÒıÓÃº¯ÊıºÍ±äÁ¿£¬Ä¬ÈÏfalse
-            output: {
-        ascii_only: true, // ·Çascii×ªÎª \u×Ö·û£¬Ä¬ÈÏfalse
-            },
-            compress: {
-        pure_funcs: null, // ['makeMap', 'console.log'], ÎŞ¸±×÷ÓÃº¯Êı£¬¿ÉÒ¡Ê÷É¾³ı
-            },
-          });
+    let {code: minCode} = await minify(code, {
+      sourceMap: false,
+      toplevel: true, // åˆ é™¤é¡¶å±‚ä½œç”¨åŸŸä¸­æœªå¼•ç”¨å‡½æ•°å’Œå˜é‡ï¼Œé»˜è®¤false
+      output: {
+        ascii_only: true, // éasciiè½¬ä¸º \uå­—ç¬¦ï¼Œé»˜è®¤false
+      },
+      compress: {
+        pure_funcs: null, // ['makeMap', 'console.log'], æ— å‰¯ä½œç”¨å‡½æ•°ï¼Œå¯æ‘‡æ ‘åˆ é™¤
+      },
+    });
 
-        minCode = (banner ? `${banner}\n` : '') + minCode;
+    minCode = (banner ? `${banner}\n` : '') + minCode;
 
-    // Òì²½Ğ´³ö
+    // å¼‚æ­¥å†™å‡º
     const ext = path.extname(file);
     write(file.replace(ext, `.min${ext}`), minCode, true, true);
 
     R = true;
   } catch (e) {
     console.error(` exp:${e.message}`);
-      }
+  }
 
   return R;
 }
 
 function report(code, dest, extra) {
-  console.log(
-    `${blue(path.relative(process.cwd(), dest))} ${getSize(code)}${extra || ''}`
-  );
+  console.log(`${blue(path.relative(process.cwd(), dest))} ${getSize(code)}${extra || ''}`);
 }
 
 /**
- * Ğ´ÈëÎÄ¼ş
+ * å†™å…¥æ–‡ä»¶
  * @param {*} dest
  * @param {*} code
  * @param {*} zip

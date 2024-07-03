@@ -21,8 +21,6 @@ const isDev = env !== 'production';
 
 const dir = _path => path.resolve(__dirname, '../', _path);
 
-const input = dir('./src/index.js');
-
 /**
  * 从 package.json 和 builtinModules 中获取不打包的引用库
  * 生成 node cjs 库时需要
@@ -40,12 +38,14 @@ const external = [
 module.exports = [
   // browser dev
   {
+    input: dir('./src/index.js'), // 打包入口文件
     file: dir('dist/core.cjs'), // cjs格式，后端打包，保留引用
     format: 'cjs',
     browser: false,
     external,
   },
   {
+    input: dir('./src/index.js'), // 打包入口文件
     file: dir('dist/core.mjs'), // esm格式，后端打包，保留引用
     format: 'esm',
     exports: 'named', // 名称方式输出各个子模块
@@ -53,6 +53,7 @@ module.exports = [
     external,
   },
   {
+    input: dir('./src/index.js'), // 打包入口文件
     file: dir('dist/core.js'), // umd格式，es5语法，web直接加载，合并引用
     format: 'umd',
     browser: true,
@@ -60,6 +61,20 @@ module.exports = [
     name, // 全局名称，替换 window.name
     // exports: 'default', // default 方式输出单一包
     external: [],
+  },
+  {
+    input: dir('./src/jsx-runtime.js'), // 打包入口文件
+    file: dir('dist/jsx-runtime.js'), // cjs格式，后端打包，保留引用
+    format: 'cjs',
+    browser: false,
+    external,
+  },
+  {
+    input: dir('./src/jsx-dev-runtime.js'), // 打包入口文件
+    file: dir('dist/jsx-dev-runtime.js'), // cjs格式，后端打包，保留引用
+    format: 'cjs',
+    browser: false,
+    external,
   },
 ].map(genConfig);
 
@@ -69,7 +84,7 @@ module.exports = [
  * @param {*} param0
  * @returns
  */
-function genConfig({browser = true, es5 = false, ...cfg}) {
+function genConfig({input, browser = true, es5 = false, ...cfg}) {
   const config = {
     input: {
       input,
@@ -86,8 +101,8 @@ function genConfig({browser = true, es5 = false, ...cfg}) {
           'process.browser': !!browser,
           __VERSION__: version,
         }),
-        // 根据需要，将es6 转换为 es5，兼容所有浏览器，依赖@babel/runtime-corejs3 polyfill        
-          es5 && // eslint-disable-line
+        // 根据需要，将es6 转换为 es5，兼容所有浏览器，依赖@babel/runtime-corejs3 polyfill
+        es5 && // eslint-disable-line
           // babel({babelHelpers: 'bundled', presets: ['@babel/preset-env']}),
           babel({
             // 'bundled' | 'runtime' | 'inline' | 'external' Default: 'bundled'
