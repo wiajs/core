@@ -29,7 +29,7 @@ const {support, device} = $;
 
 // Default
 const def = {
-  version: '1.0.1',
+  version: '1.2.0',
   el: 'body',
   root: 'body',
   theme: 'auto',
@@ -72,17 +72,16 @@ class App extends Module {
   static apps = {};
   constructor(opts = {}) {
     super(opts);
-    // eslint-disable-next-line
     // 单例，只能一个
-    if (App.instance && typeof window !== 'undefined') {
-      throw new Error("App is already initialized and can't be initialized more than once");
-    }
+    // if (App.instance && typeof window !== 'undefined') {
+    //   throw new Error("App is already initialized and can't be initialized more than once");
+    // }
+    // App.instance = app; // 控制单例
 
     const passedParams = extend({}, opts);
 
     const app = this;
     $.App = App;
-    App.instance = app; // 控制单例
     app.device = device;
     app.support = support;
     console.log('App constructor', {Device: device, Support: support});

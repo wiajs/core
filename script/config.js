@@ -69,13 +69,6 @@ module.exports = [
     browser: false,
     external,
   },
-  {
-    input: dir('./src/jsx-dev-runtime.js'), // 打包入口文件
-    file: dir('dist/jsx-dev-runtime.js'), // cjs格式，后端打包，保留引用
-    format: 'cjs',
-    browser: false,
-    external,
-  },
 ].map(genConfig);
 
 /**

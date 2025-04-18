@@ -1,6 +1,6 @@
 {
   "name": "@wiajs/core",
-  "version": "1.1.18",
+  "version": "1.1.29",
   "description": "wia app core package",
   "main": "./dist/core.cjs",
   "module": "./dist/core.mjs",
@@ -12,8 +12,8 @@
       "import": "./dist/core.mjs",
       "default": "./dist/core.mjs"
     },
-    "./jsx-runtime": "./dist/jsx-runtime.js",
-    "./jsx-dev-runtime": "./dist/jsx-dev-runtime.js",
+    "./jsx-runtime":  "./dist/jsx-runtime.js",
+    "./jsx-dev-runtime": "./dist/jsx-runtime.js",   
     "./util/*": [
       "./util/*.js",
       "./util/*.d.ts"
