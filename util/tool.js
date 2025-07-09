@@ -130,43 +130,47 @@ function newFileName(len) {
 
 /**
  * 比较方法，用于对象数组排序，常用于数据表排序
- * @param {*} k 对象属性key
- * @param {*} asc 升序、降序，默认升序
- * @param {*} type 类型auto, number、datetime、string，缺省 auto
+ * @param {string} k 对象属性key
+ * @param {boolean} desc 升序、降序，默认升序
+ * @param {string} type 类型auto, number、date、string，缺省 auto
+ * @param {string} [sub] 子对象
  */
-function compareObj(k, desc, type) {
-  return function (o1, o2) {
-		let R = 0;
-		try {
-			let v1 = o1[k];
-			let v2 = o2[k];
-			// 数字、日期字符串，按数字、日期排序
-			if ($.isStr(v1) || $.isStr(v2)) {
-				// 金额可能有千字分隔符，需替换
-				if (type.toLowerCase() === 'number') {
-					v1 = v1.replaceAll(',', '');
-					v2 = v2.replaceAll(',', '');
-				}
+function compareObj(k, desc, type, sub) {
+  return (o1, o2) => {
+    let R = 0
+    try {
+      let v1 = sub ? o1[sub][k] : o1[k]
+      let v2 = sub ? o2[sub][k] : o2[k]
 
-				if ($.isDateStr(v1) && $.isDateStr(v2)) {
-					v1 = Date.parse(v1);
-					v2 = Date.parse(v2);
-				} else if ($.isNumStr(v1) && $.isNumStr(v2)) {
-					v1 = Number(v1);
-					v2 = Number(v2);
-				}
-			}
+      // log({v1, v2, type}, 'compareObj')
 
-			if (v1 < v2) {
-				R = desc ? 1 : -1;
-			} else if (v1 > v2) {
-				R = desc ? -1 : 1;
-			}
-		} catch(ex) {
-			console.log('compareObj exp:', ex.message);
-		}
-    return R;
-  };
+      if (typeof v1 === 'string' || typeof v2 === 'string') {
+        // 数字、日期字符串，按数字、日期排序
+        // 金额可能有千字分隔符，需替换
+        if (type.toLowerCase() === 'number') {
+          if (typeof v1 === 'string') {
+            v1 = v1.replaceAll(',', '').replaceAll(/null|-|^$/g, '0')
+            v1 = Number(v1)
+          }
+          if (typeof v2 === 'string') {
+            v2 = v2.replaceAll(',', '').replaceAll(/null|-|^$/g, '0')
+            v2 = Number(v2)
+          }
+        } else if (type.toLowerCase() === 'date') {
+          v1 = Date.parse(v1)
+          v2 = Date.parse(v2)
+        }
+      }
+
+      if (v1 < v2) R = desc ? 1 : -1
+      else if (v1 > v2) R = desc ? -1 : 1
+
+      // log({v1, v2, R}, 'compareObj')
+    } catch (ex) {
+      console.log('compareObj exp:', ex.message)
+    }
+    return R
+  }
 }
 
 /**

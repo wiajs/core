@@ -1,143 +1,151 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/**
+ * 自动根据page目录文件生成 src目录的pages.js 文件，用于打包
+ */
+import fs from 'node:fs'
+import path from 'node:path'
+import crypto from 'node:crypto'
+import ld from 'lodash'
+
+/** @typedef {object} Opts
+ * @prop {string[]} [file] - 发布文件或路径
+ * @prop {string[]} [exclude] - 排除路径或文件
+ */
 
 /**
- * 自动根据page目录文件生成 src目录的pages.js 文件
+ * 生成 pages.js，引入 index.js，用于本地调试
+ * @param {string} dir - 路径
+ * @param {Opts} opts - 配置文件，设置打包文件和排除文件
  */
-const _ = require('lodash');
-const path = require('path');
-const crypto = require('crypto');
-const utils = require('utility');
-const fs = require('fs');
-
-let _cfg = {};
-
-/**
- * 检查指定项目文件是否更新，如更新则重新打包，并自动部署到腾讯云CDN
- * @param {string} dir 路径
- * @param {string} cfg 配置文件
- */
-async function pages(dir, cfg) {
-  let R = '';
+async function makePages(dir, opts) {
+  let R = ''
 
   try {
-    const files = await getPage(dir, cfg);
-    const pf = {}; // page file
+    const files = await getPage(dir, opts)
+    const pf = {} // page file
     files.forEach(v => {
-      let name = '';
-      const file = v;
+      let name = ''
+      const file = v
 
       // 去掉包含page路径
       if (v.includes('page/')) {
-        const fl = path.parse(v.replace('page/', ''));
+        const fl = path.parse(v.replace('page/', ''))
         if (fl.dir) {
-          name = `${fl.dir}/${fl.name}`;
-          let ns = name.split('/');
-          ns = ns.map(n => n[0].toUpperCase() + n.slice(1));
-          name = ns.join('');
-          pf[name] = `./${file}`;
+          name = `${fl.dir}/${fl.name}`
+          let ns = name.split('/')
+          ns = ns.map(n => n[0].toUpperCase() + n.slice(1))
+          name = ns.join('')
+          pf[name] = `./${file}`
         } else {
-          name = fl.name[0].toUpperCase() + fl.name.slice(1);
-          pf[name] = `./${file}`;
+          name = fl.name[0].toUpperCase() + fl.name.slice(1)
+          pf[name] = `./${file}`
         }
       }
-    });
+    })
 
     // page下的文件写入pages.js文件
-    if (!_.isEmpty(pf)) R = makeFile(pf, 'pages', dir);
+    if (!ld.isEmpty(pf)) R = makeFile(pf, 'pages', dir)
   } catch (err) {
-    console.log(`pages exp:${err.message}`);
+    console.log(`makePages exp:${err.message}`)
   }
 
-  return R;
+  return R
 }
 
 /**
- * webpack 打包文件，每个文件单独打包
+ * 获取page文件独立打包entry，用于发布
  * @param {string} dir 路径
- * @param {string} cfg 配置文件
+ * @param {Opts} opts 配置文件
  * 返回 {'page/login': './src/page/login.js'}
  */
-async function pack(dir, cfg) {
-  const R = {};
+async function getEntry(dir, opts) {
+  const R = {index: './src/entry.js'}
 
   try {
-    const files = await getPage(dir, cfg);
-    files.forEach(v => {
-      const fl = path.parse(v);
-      const name = `${fl.dir}/${fl.name}`;
-      R[name] = `./src/${v}`;
-    });
+    console.log({dir, opts}, 'getEntry')
+    const files = await getPage(dir, opts)
+    for (const v of files) {
+      const fl = path.parse(v)
+      const name = `${fl.dir}/${fl.name}`
+      R[name] = `./src/${v}`
+    }
   } catch (err) {
-    console.log(`pack exp:${err.message}`);
+    console.log(`getEntry exp:${err.message}`)
   }
 
-  return R;
+  return R
 }
 
 /**
- * 获取指定路径中的js文件列表
+ * 获取指定路径中的page目录中的js文件列表
  * @param {string} dir 路径
- * @param {string} cfg 配置文件
+ * @param {Opts} opts 配置文件
  * @returns {*[]}
  */
-async function getPage(dir, cfg) {
-  const R = [];
+async function getPage(dir, opts) {
+  const R = []
 
   try {
-    dir = dir || process.cwd();
-    const src = path.join(dir, './src');
-    _cfg = cfg; // require(path.join(dir, './wia.config.js')); es6 模式不支持
-    const rs = [];
-    // 获取目标项目目录、子目录下的文件MD5对象
-    await getFile(path.join(src, './page'), rs, src);
+    dir = dir || process.cwd()
+    const src = path.join(dir, './src')
+    /** @type {string[]} */
+    const rs = []
+    // 获取page目录、子目录下的文件
+    await getFile(path.join(src, './page'), rs, src)
 
     // 有js文件变化，html、less 暂未处理
-    if (!_.isEmpty(rs)) {
-      const pf = {}; // page file
+    if (rs?.length) {
+      const pf = {} // page file
       // f.R.JS.forEach((v) => { // forEach 回调函数是同步执行的，不用担心jf没有准备好！
 
       // eslint-disable-next-line
-      for (const v of rs) {
-        let pk = false; // 是否需重新编译      console.log('pages', {js: f.R.JS});
+      for (const r of rs) {
+        let mk = false // 是否需重新编译      console.log('pages', {js: f.R.JS});
 
         // eslint-disable-next-line
-        for (let pf of _cfg.file) {
-          // console.log({v, pf});
-          // eslint-disable-line
-          if (
-            (pf.includes('.js') && v === pf) ||
-            (!pf.includes('.js') && new RegExp(`^/?${pf}/`, 'i').test(v))
-          ) {
-            pk = true;
-            break;
+        for (let v of opts.file) {
+          // console.log({v: r}, 'getPage')
+          // 文件
+          if (v.includes('.')) {
+            v = v.replace('.', '\\.').replace('*', '\\w+')
+            if (new RegExp(`^${v}$`, 'i').test(r)) {
+              mk = true
+              break
+            }
+          } else if (new RegExp(`^/?${v}/`, 'i').test(r)) {
+            mk = true
+            break
           }
         }
 
         // 排除
-        if (pk) {
-          // eslint-disable-next-line
-          for (let pf of _cfg.exclude) {
-            if (
-              (pf.includes('.js') && v === pf) ||
-              (!pf.includes('.js') && new RegExp(`^${pf}/`, 'i').test(v))
-            ) {
-              pk = false;
-              break;
+        if (mk) {
+          for (let v of opts.exclude) {
+            // 文件
+            if (v.includes('.')) {
+              v = v.replace('.', '\\.').replace('*', '\\w+')
+              if (new RegExp(`^${v}$`, 'i').test(r)) {
+                console.log('getFile exclude', {v: r})
+                mk = false
+                break
+              }
+            } else if (new RegExp(`^/?${v}/`, 'i').test(r)) {
+              console.log('getFile exclude', {v: r})
+              mk = false
+              break
             }
           }
         }
-        // console.log('getPage', {pk, v});
+
+        // console.log('getPage', {mk, v: r})
         // 需编译文件
-        if (pk) {
-          R.push(v);
-        }
+        if (mk) R.push(r)
       }
     }
   } catch (err) {
-    console.log(`getPage exp:${err.message}`);
+    console.log(`getPage exp:${err.message}`)
   }
 
-  return R;
+  return R
 }
 
 /**
@@ -146,31 +154,34 @@ async function getPage(dir, cfg) {
  * @param {*} cb
  */
 function hash(tx) {
-  let R = crypto.createHash('md5');
-  R.update(tx);
-  R = R.digest('hex');
-  return R;
+  let R = crypto.createHash('md5')
+  R.update(tx)
+  R = R.digest('hex')
+  return R
 }
 
 /**
  * 将page中的js文件创建到pages.js中，方便调试
  * 也用来创建编译入口文件（entry.js），webpack最新5.xx版本自动将入口文件改为直接运行代码！
  * wia需要模块化，创建入口文件来解决该问题。
- * @param {*} pf
+ * @param {object} pf - page file
+ * @param {string} name - 文件名
+ * @param {string} [dir] - 路径，缺省为当前运行路径
  */
 function makeFile(pf, name, dir) {
-  if (_.isEmpty(pf)) return '';
+  if (ld.isEmpty(pf)) return ''
 
-  dir = dir || process.cwd();
-  const src = path.join(dir, './src');
+  dir = dir || process.cwd()
+  const src = path.join(dir, './src')
 
-  const p = [];
-  const ns = [];
+  const p = []
+  const ns = []
+  // import 模块
   Object.keys(pf).forEach(k => {
-    const f = pf[k].replace(/.js$/, '');
-    p.push(`import ${k} from '${f}';`);
-    ns.push(`  '${f}': ${k},`);
-  });
+    const f = pf[k].replace(/.js$/, '')
+    p.push(`import ${k} from '${f}';`)
+    ns.push(`  '${f}': ${k},`)
+  })
 
   // Object.keys(pf).forEach(k => {
   //   const n = k[0].toLowerCase() + k.slice(1);
@@ -186,102 +197,101 @@ function makeFile(pf, name, dir) {
   // }
   // `);
 
-  // vite
+  // 定义输出变量，vite
   p.push(`
 const ${name} = {
 ${ns.join('\n')}
 };
 
 export default ${name};
-`);
+`)
 
   // 将内容写入page.js 文件
-  const ps = p.join('\n');
-  if (!_.isEmpty(ps)) {
-    const f = path.join(src, `./${name}.js`);
+  const ps = p.join('\n')
+  if (!ld.isEmpty(ps)) {
+    const f = path.join(src, `./${name}.js`)
     // 获取当前页面共用模块
-    let lastH = '';
+    let lastH = ''
     if (fs.existsSync(f)) {
-      const tx = fs.readFileSync(f, 'utf8');
-      lastH = hash(tx);
+      const tx = fs.readFileSync(f, 'utf8')
+      lastH = hash(tx)
     }
     // 有变化，则更新pages文件
     if (hash(ps) !== lastH) {
       // console.log({f, ps});
-      fs.writeFileSync(f, ps, e => e && console.log(`save ${f} exp:${e.message}`));
+      fs.writeFileSync(f, ps, e => e && console.log(`save ${f} exp:${e.message}`))
     }
   }
 
-  return ps;
+  return ps
 }
 
 /**
  * 对指定文件夹下的子文件夹和文件进行递归，生成带MD5的hash值列表对象
  * 对于子目录文件， 生成嵌套对象， 如
  * {项目目录: {子目录:{xxx:e8461954cbf736f2e1d71cb84c72c2b4}}
- * @param {*} dir 文件路径
- * @param {*} rs 上次更新的hash文件对象
+ * @param {string} dir 文件路径
+ * @param {string[]} rs 上次更新的hash文件对象
+ * @param {string} [src] 源路径
  */
 async function getFile(dir, rs, src) {
-  const tree = {};
+  const tree = {}
   try {
     // 获得当前文件夹下的所有的文件夹和文件，赋值给目录和文件数组变量
-    const [dirs, files] = _(fs.readdirSync(dir)).partition(p =>
-      fs.statSync(path.join(dir, p)).isDirectory()
-    );
+    const [dirs, files] = ld(fs.readdirSync(dir)).partition(p => fs.statSync(path.join(dir, p)).isDirectory())
 
     // 对子文件夹进行递归，使用了Promise.all，并发执行
-    const pms = [];
-    dirs.forEach(v => pms.push(getFile(path.join(dir, v), rs, src)));
-    await Promise.all(pms);
+    const pms = []
+    dirs.forEach(v => pms.push(getFile(path.join(dir, v), rs, src)))
+    await Promise.all(pms)
 
     // 当前目录下所有文件名进行同步hash计算
     // eslint-disable-next-line no-restricted-syntax
     files.forEach(f => {
       if (f.includes('.js') && rs) {
-        let file = path.join(dir, f);
+        let file = path.join(dir, f)
         // 去掉项目根路径
-        file = file.replace(src, '');
-        if (file.startsWith(path.sep)) file = file.substr(1);
+        file = file.replace(src, '')
+        if (file.startsWith(path.sep)) file = file.slice(1)
 
-        if (path.sep !== '/') file = file.replace(/\\/gim, '/'); // 统一路径为/，方便处理
+        if (path.sep !== '/') file = file.replace(/\\/gim, '/') // 统一路径为/，方便处理
 
-        rs.push(file);
+        rs.push(file)
       }
-    });
+    })
   } catch (e) {
-    console.log(`getFile exp:${e.message}`);
+    console.log(`getFile exp:${e.message}`)
   }
 
-  return tree;
+  return tree
 }
 
 function clear(dir) {
   try {
-    dir = dir || process.cwd();
-    const src = path.join(dir, './src');
+    dir = dir || process.cwd()
+    const src = path.join(dir, './src')
     const ps = `
 const pages = {};
 
 export default pages;
-`;
-    let lastH = '';
-    const f = path.join(src, './pages.js');
+`
+    let lastH = ''
+    const f = path.join(src, './pages.js')
     if (fs.existsSync(f)) {
-      const tx = fs.readFileSync(f, 'utf8');
-      lastH = hash(tx);
+      const tx = fs.readFileSync(f, 'utf8')
+      lastH = hash(tx)
     }
     // 有变化，则更新pages文件
     if (hash(ps) !== lastH) {
-      console.log('clear save...');
+      console.log('clear save...')
       // 将内容写入page.js 文件
-      fs.writeFileSync(f, ps, e => e && console.log(`clear save ${f} exp:${e.message}`));
+      fs.writeFileSync(f, ps, e => e && console.log(`clear save ${f} exp:${e.message}`))
     }
   } catch (err) {
-    console.log(`clear exp:${err.message}`);
+    console.log(`clear exp:${err.message}`)
   }
 }
 
 // pages(); // 单独调试用
 
-module.exports = {pages, pack, clear, makeFile};
+export {makePages, getEntry as entry, clear, makeFile}

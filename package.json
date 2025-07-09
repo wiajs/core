@@ -1,6 +1,6 @@
 {
   "name": "@wiajs/core",
-  "version": "1.1.29",
+  "version": "1.1.31",
   "description": "wia app core package",
   "main": "./dist/core.cjs",
   "module": "./dist/core.mjs",
