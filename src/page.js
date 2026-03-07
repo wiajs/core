@@ -26,31 +26,32 @@
  *
  */
 
-import Event from './event';
+import {log as Log} from '@wiajs/util'
+import Event from './event'
 
 export default class Page extends Event {
   constructor(app, name, title, style) {
-    super(null, [app]);
-    this.app = app; // 应用实例
-    this.cfg = app.cfg;
-    this.name = name; // 名称，可带路径 admin/login
-    this.title = title; // 浏览器标题
-    this.style = style || `./page/${name}.css`;
+    super(null, [app])
+    this.app = app // 应用实例
+    this.cfg = app.cfg
+    this.name = name // 名称，可带路径 admin/login
+    this.title = title // 浏览器标题
+    this.style = style || `./page/${name}.css`
 
     // 以下变量由路由器赋值
-    this.owner = '';
-    this.appName = '';
-    this.path = '';
-    this.view = null; // 页面的div层$Dom对象，router创建实例时赋值
-    this.dom = null; // 页面的div层dom对象，router创建实例时赋值
-    this.$el = null; // $dom === view
-    this.el = null; // dom === dom
+    this.owner = ''
+    this.appName = ''
+    this.path = ''
+    this.view = null // 页面的div层$Dom对象，router创建实例时赋值
+    this.dom = null // 页面的div层dom对象，router创建实例时赋值
+    this.$el = null // $dom === view
+    this.el = null // dom === dom
 
-    this.html = ''; // 页面html文本，router创建实例时赋值
-    this.css = ''; // 页面css样式，router创建实例时赋值
-    this.js = ''; // 页面代码，router创建实例时赋值
-    this.data = {}; // 页面数据对象
-    this.param = {}; // 页面切换传递进来的参数对象，router创建实例时赋值
+    this.html = '' // 页面html文本，router创建实例时赋值
+    this.css = '' // 页面css样式，router创建实例时赋值
+    this.js = '' // 页面代码，router创建实例时赋值
+    this.data = {} // 页面数据对象
+    this.param = {} // 页面切换传递进来的参数对象，router创建实例时赋值
   }
 
   /**
@@ -61,24 +62,24 @@ export default class Page extends Event {
    */
   load(param) {
     // $.assign(this.data, param);
-    this.emit('local::load pageLoad', param);
-    this.emit('pageLoad', this, param);
+    this.emit('local::load pageLoad', param)
+    this.emit('pageLoad', this, param)
   }
 
   /**
    * 在已经加载就绪的视图上操作
    * @param {*} view 页面层的 Dom 对象，已经使用`$(#page-name)`，做了处理
    * @param {*} param go 函数的参数，或 网址中 url 中的参数
-   * @param {*} back 是否为回退，A->B, B->A，这种操作属于回退
+   * @param {*} lastPath 前路由的路径，go 函数的参数，或 网址中 url 中的参数
    */
-  ready(view, param, back) {
+  ready(view, param, lastPath) {
     // $.assign(this, {page, param, back});
     // $.assign(this.data, param);
     // 隐藏所有模板
-    this.init();
-    this.emit('local::ready', view, param, back);
+    this.init()
+    this.emit('local::ready', view, param, lastPath)
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageReady', this, view, param, back);
+    this.emit('pageReady', this, view, param, lastPath)
   }
 
   /**
@@ -86,52 +87,123 @@ export default class Page extends Event {
    * @param {*} v dom 容器，默认为页面实例的view
    */
   init(v) {
-    const {view} = this;
-    v = v ? $(v) : view;
+    const {view} = this
+    v = v ? $(v) : view
   }
 
   // 显示已加载的页面
   // view：页面Dom层，param：参数
-  show(view, param) {
+  show(view, param, lastPath) {
     // 隐藏所有模板
-    view.qus('[name$=-tp]').hide();
+    view.qus('[name$=-tp]').hide()
     // 防止空链接，刷新页面
-    view.qus('a[href=""]').attr('href', 'javascript:;');
+    view.qus('a[href=""]').attr('href', 'javascript:;')
     // this.init();
-    if (this.reset) this.reset();
-    this.emit('local::show', view, param);
+    if (this.reset) this.reset()
+    this.emit('local::show', view, param, lastPath)
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageShow', this, view, param);
+    this.emit('pageShow', this, view, param, lastPath)
   }
 
   // 回退显示已加载的页面
   // view：页面Dom层，param：参数
-  back(view, param) {
+  back(view, param, lastPath) {
     // 隐藏所有模板
-    view.qus('[name$=-tp]').hide();
+    view.qus('[name$=-tp]').hide()
     // 防止空链接，刷新页面
-    view.qus('a[href=""]').attr('href', 'javascript:;');
+    view.qus('a[href=""]').attr('href', 'javascript:;')
 
-    this.emit('local::back', view, param);
+    this.emit('local::back', view, param, lastPath)
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageBack', this, view, param);
+    this.emit('pageBack', this, view, param, lastPath)
   }
 
   change(view, param, lastParam) {
-    this.emit('local::change', view, param, lastParam);
+    this.emit('local::change', view, param, lastParam)
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageChange', this, view, param, lastParam);
+    this.emit('pageChange', this, view, param, lastParam)
   }
 
   hide(view) {
-    this.emit('local::hide', view);
+    this.emit('local::hide', view)
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageHide', this, view);
+    this.emit('pageHide', this, view)
   }
 
   unload(view) {
-    this.emit('local::unload', view);
+    this.emit('local::unload', view)
     // 向上触发跨页面事件，存在安全问题
-    this.emit('pageUnload', this, view);
+    this.emit('pageUnload', this, view)
+  }
+}
+
+/**
+ * 页面工厂函数
+ * 自动处理类的继承、日志注入、生命周期事件绑定
+ * @param {Object} def - 页面默认配置
+ * @param {Object} hooks - 业务钩子函数集合 { init, bind, show... }
+ */
+export function page(def, hooks = {}) {
+  // 自动根据配置创建当前页面的专属日志实例
+  const _log = Log({m: `${def.name}`})
+
+  return class extends Page {
+    constructor(opts = {}) {
+      const opt = {...def, ...opts}
+      super(opt.app, opt.name, opt.title)
+      this.opt = opt
+
+      // ✨ 魔法 1：利用 page.js 内置的 Event 机制，全自动挂载无侵入日志！
+      this.on('local::load', param => _log({param}, 'load'))
+      this.on('local::ready', (v, param, lastPath) => _log({v, param, lastPath, id: this.id}, 'ready'))
+      this.on('local::show', (v, param, lastPath) => _log({v, param, lastPath, id: this.id}, 'show'))
+      this.on('local::change', (v, param, lastParam) => _log({v, param, lastParam}, 'change'))
+      this.on('local::back', (v, param, lastPath) => _log({v, param, lastPath, id: this.id}, 'back'))
+      this.on('local::hide', v => _log({v, id: this.id}, 'hide'))
+      this.on('local::unload', v => _log({v, id: this.id}, 'unload'))
+    }
+
+    // 映射其他生命周期到业务 hooks
+    load(param) {
+      super.load(param)
+      if (hooks.load) hooks.load({param, pg: this, log: _log})
+    }
+
+    // ✨ 魔法 2：统一调度业务代码的 init 和 bind，提供优雅的上下文
+    async ready(v, param, lastPath) {
+      super.ready(v, param, lastPath)
+
+      // 组装上下文对象供业务使用
+      const ctx = {v, pg: this, param, lastPath, log: _log}
+
+      // 自动按顺序执行业务层的初始化和事件绑定
+      if (hooks.init) await hooks.init(ctx)
+      if (hooks.bind) hooks.bind(ctx)
+    }
+
+    show(v, param, lastPath) {
+      super.show(v, param, lastPath)
+      if (hooks.show) hooks.show({v, pg: this, param, lastPath, log: _log})
+    }
+
+    change(v, param, lastParam) {
+      super.change(v, param, lastParam)
+      if (hooks.change) hooks.change({v, pg: this, param, lastParam, log: _log})
+    }
+
+    back(v, param, lastPath) {
+      super.back(v, param, lastPath)
+      if (hooks.back) hooks.back({v, pg: this, param, lastPath, log: _log})
+    }
+
+    hide(v, param) {
+      super.hide(v, param)
+      if (hooks.hide) hooks.hide({v, pg: this, param, log: _log})
+    }
+
+    unload(v) {
+      super.unload(v)
+      if (hooks.unload) hooks.unload({v, pg: this, log: _log})
+    }
   }
 }

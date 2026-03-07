@@ -1,21 +1,20 @@
-export {default as Ajax} from './ajax';
-export {default as App} from './app';
-export {default as Constructors} from './constructors';
+export {default as Ajax} from './ajax'
+export {default as App} from './app'
+export {default as Constructors} from './constructors'
 // export {default as Support} from './support';
 // export {default as Device} from './device';
-const Support = $.support;
-const Device = $.device;
-export {Support, Device};
-export {default as Event} from './event';
-export {default as Lazy} from './lazy';
-export {default as loadModule} from './loadModule';
-export {default as Modals} from './modals';
-export {default as Module} from './module';
-export {default as Page} from './page';
+const Support = $.support
+const Device = $.device
+export {Support, Device}
+export {default as Event} from './event'
+export {default as Lazy} from './lazy'
+export {default as loadModule} from './loadModule'
+export {default as Modals} from './modals'
+export {default as Module} from './module'
+export {default as Page, page} from './page'
 // export {default as Request} from './request'; // use ajax
-export {default as Resize} from './resize';
-export {default as SW} from './sw';
-export {default as Utils} from './utils';
-export {default as Modal} from './modal';
-export {jsx} from './jsx';
-
+export {default as Resize} from './resize'
+export {default as SW} from './sw'
+export {default as Utils} from './utils'
+export {default as Modal} from './modal'
+export {jsx} from './jsx'
