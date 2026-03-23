@@ -25,8 +25,7 @@
  *  $.lastPage：前路由，可通过该参数，获取前路由的 data，在后续路由中使用
  *
  */
-
-import {log as Log} from '@wiajs/util'
+import {log as Log} from '../util/log'
 import Event from './event'
 
 export default class Page extends Event {

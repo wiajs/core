@@ -1,3 +1,5 @@
+import { extend } from './utils.js';
+
 const SW = {
   registrations: [],
   register(path, scope) {
@@ -60,7 +62,7 @@ export default {
   },
   create() {
     const app = this;
-    $.extend(app, {
+    extend(app, {
       serviceWorker: {
         container: ('serviceWorker' in window.navigator) ? window.navigator.serviceWorker : undefined,
         registrations: SW.registrations,
@@ -74,7 +76,13 @@ export default {
       if (!('serviceWorker' in window.navigator))
         return;
       const app = this;
-      if (app.device.cordova || (window.Capacitor && window.Capacitor.isNative)) return;
+      if (
+        app.device.cordova ||
+        (window.Capacitor &&
+          (window.Capacitor.isNative ||
+            (window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())))
+      )
+        return;
       if (!app.serviceWorker.container)
         return;
       const paths = app.params.serviceWorker.path;

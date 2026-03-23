@@ -1,51 +1,51 @@
 {
   "name": "@wiajs/core",
-  "version": "1.2.2",
+  "version": "2.1.0",
   "description": "wia app core package",
-  "main": "./dist/core.cjs",
-  "module": "./dist/core.mjs",
-  "types": "./types/core.d.ts",
-	"exports": {
- 		".": {
-      "types": "./types/core.d.ts",
-      "require": "./dist/core.cjs",
-      "import": "./dist/core.mjs",
-      "default": "./dist/core.mjs"
-    },
-    "./jsx-runtime":  "./dist/jsx-runtime.js",
-    "./jsx-dev-runtime": "./dist/jsx-runtime.js",   
-    "./util/*": [
-      "./util/*.js",
-      "./util/*.d.ts"
-    ]		
+  "keywords": [
+    "core",
+    "wia"
+  ],
+  "homepage": "https://www.wia.pub/core",
+  "bugs": {
+    "url": "https://github.com/wiajs/core/issues"
   },
-  "scripts": {
-    "build": "cross-env NODE_ENV=production gulp build",
-    "build-dev": "cross-env NODE_ENV=development gulp build",
-    "dev": "cross-env NODE_ENV=development gulp cjs",
-    "dev:umd": "cross-env NODE_ENV=development gulp umd",
-    "dev:esm": "cross-env NODE_ENV=development gulp esm",
-    "release": "bash release.sh"
+  "license": "ELv2",
+  "author": {
+    "name": "Sibyl Yu",
+    "email": "sibyl@wia.pub"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wiajs/wia.git"
   },
-  "keywords": [
-    "wia",
-    "core"
-  ],
-  "author": {
-    "name": "Sibyl Yu",
-    "email": "sibyl@wia.pub"
+  "main": "./dist/core.cjs",
+  "module": "./dist/core.mjs",
+  "types": "./types/core.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/core.d.ts",
+      "require": "./dist/core.cjs",
+      "import": "./dist/core.mjs",
+      "default": "./dist/core.mjs"
+    },
+    "./jsx-runtime": "./dist/jsx-runtime.js",
+    "./jsx-dev-runtime": "./dist/jsx-runtime.js",
+    "./util/*": [
+      "./util/*.js",
+      "./util/*.d.ts"
+    ]
   },
-  "license": "ELv2",
-  "bugs": {
-    "url": "https://github.com/wiajs/core/issues"
-  },
-  "homepage": "https://www.wia.pub/core",
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production gulp build",
+    "build-dev": "cross-env NODE_ENV=development gulp build",
+    "dev": "cross-env NODE_ENV=development gulp cjs",
+    "dev:esm": "cross-env NODE_ENV=development gulp esm",
+    "dev:umd": "cross-env NODE_ENV=development gulp umd",
+    "release": "bash release.sh"
   },
   "devDependencies": {
     "@rollup/plugin-babel": "^6.0.3",

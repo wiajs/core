@@ -1,12 +1,11 @@
 export default {
   name: 'resize',
-  instance: {
-    getSize() {
-      const app = this;
-      if (!app.root[0])
-        return {width: 0, height: 0, left: 0, top: 0};
-      const offset = app.root.offset();
-      const [width, height, left, top] = [app.root[0].offsetWidth, app.root[0].offsetHeight, offset.left, offset.top];
+  create() {
+    const app = this;
+    app.getSize = () => {
+      if (!app.el) return {width: 0, height: 0, left: 0, top: 0};
+      const offset = app.$el.offset();
+      const [width, height, left, top] = [app.el.offsetWidth, app.el.offsetHeight, offset.left, offset.top];
       app.width = width;
       app.height = height;
       app.left = left;

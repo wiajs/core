@@ -1,26 +1,42 @@
+// 1. 安全地获取开发环境状态（兼容打包工具、浏览器和 Node.js）
+// 如果 Rspack 注入了 __DEV__，就用注入的值；如果是在 Node.js 下，就回退读取 process.env.NODE_ENV
+const isDev = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !== 'production'
+
+// 全局单例复用空对象、空数组，避免重复创建，保障了开发期的内存安全、还兼顾了生产期的极致性能
+/** @type {{ readonly [key: string]: any }} */
+const EMPTY_OBJ = isDev ? Object.freeze({}) : {}
+const EMPTY_ARR = isDev ? Object.freeze([]) : []
+
+const NOOP = () => {}
+
+/**
+ * Always return false.
+ */
+const NO = () => false
+
 class StringBuf {
   constructor() {
-    this.buf = [];
+    this.buf = []
   }
 
   append(str, ...args) {
-    if (args.length > 0) this.buf.push(format(str, ...args));
+    if (args.length > 0) this.buf.push(format(str, ...args))
     // 参数传递
-    else this.buf.push(String(str));
+    else this.buf.push(String(str))
   }
 
   insert(str, ...args) {
-    if (args.length > 0) this.buf.unshift(format(str, ...args));
+    if (args.length > 0) this.buf.unshift(format(str, ...args))
     // 参数传递
-    else this.buf.unshift(String(str));
+    else this.buf.unshift(String(str))
   }
 
   pop() {
-    this.buf.pop();
+    this.buf.pop()
   }
 
   toString() {
-    return this.buf.join('');
+    return this.buf.join('')
   }
 }
 
@@ -29,63 +45,63 @@ class StringBuf {
  * @type {Function}
  */
 function format(f, ...args) {
-  let i = 0;
-  const len = args.length;
+  let i = 0
+  const len = args.length
   const str = String(f).replace(/%[sdjo%]/g, x => {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
+    if (x === '%%') return '%'
+    if (i >= len) return x
     switch (x) {
       case '%s':
-        return String(args[i++]);
+        return String(args[i++])
       case '%d':
-        return Number(args[i++]);
+        return Number(args[i++])
       case '%j':
       case '%o':
-        return JSON.stringify(args[i++]);
+        return JSON.stringify(args[i++])
       default:
-        return x;
+        return x
     }
-  });
+  })
 
-  return str;
+  return str
 }
 
 /**
  * 去除字符串头部空格或指定字符
  */
 function trimStart(s, c) {
-  if (!c) return String(s).replace(/(^\s*)/g, '');
+  if (!c) return String(s).replace(/(^\s*)/g, '')
 
-  const rx = new RegExp(format('^%s*', c));
-  return String(s).replace(rx, '');
+  const rx = new RegExp(format('^%s*', c))
+  return String(s).replace(rx, '')
 }
 
 /**
  * 去除字符串尾部空格或指定字符
  */
 function trimEnd(s, c) {
-  if (!s) return '';
+  if (!s) return ''
 
-  if (!c) return String(s).replace(/(\s*$)/g, '');
+  if (!c) return String(s).replace(/(\s*$)/g, '')
 
-  const rx = new RegExp(format('%s*$', c));
-  return String(s).replace(rx, '');
+  const rx = new RegExp(format('%s*$', c))
+  return String(s).replace(rx, '')
 }
 
 function addDay(n, d) {
-  if (!d) d = new Date();
+  if (!d) d = new Date()
   else if (typeof d === 'string') {
     // 兼容
     d = d
-      .replace(/\-/g, '/')
+      .replace(/-/g, '/')
       .replace(/T/g, ' ')
-      .replace(/\.+[0-9]+[A-Z]$/, '');
+      .replace(/\.+[0-9]+[A-Z]$/, '')
     // 还原时区，内部保存为标准时间
-    d = new Date(d).getTime() - 3600000 * (new Date().getTimezoneOffset() / 60);
-    d = new Date(d);
+    d = new Date(d).getTime() - 3600000 * (new Date().getTimezoneOffset() / 60)
+    d = new Date(d)
   }
 
-  return new Date(d.getTime() + n * 36000000);
+  return new Date(d.getTime() + n * 36000000)
 }
 
 /**
@@ -94,19 +110,19 @@ function addDay(n, d) {
 function setTitle(val) {
   setTimeout(() => {
     // 利用iframe的onload事件刷新页面
-    document.title = val;
+    document.title = val
 
-    const fr = document.createElement('iframe');
+    const fr = document.createElement('iframe')
     // fr.style.visibility = 'hidden';
-    fr.style.display = 'none';
+    fr.style.display = 'none'
     // fr.src = 'https://cos.nuoya.io/mall/favicon.ico';
     fr.onload = () => {
       setTimeout(() => {
-        document.body.removeChild(fr);
-      }, 0);
-    };
-    document.body.appendChild(fr);
-  }, 0);
+        document.body.removeChild(fr)
+      }, 0)
+    }
+    document.body.appendChild(fr)
+  }, 0)
 }
 
 /**
@@ -114,18 +130,17 @@ function setTitle(val) {
  * @param {int} len
  */
 function newFileName(len) {
-  const R = [];
-  len = len || 32;
+  const R = []
+  len = len || 32
   // 键盘上的所有可见字符
   // 不包含 *?:/\<>|
   const str =
     // 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~()';
-    '123456789-_~()!';
-  const size = str.length;
-  for (let i = 0; i < len; i++) {
-    R.push(str.charAt(Math.floor(Math.random() * size)));
-  }
-  return R.join('');
+    '123456789-_~()!'
+  const size = str.length
+  for (let i = 0; i < len; i++) R.push(str.charAt(Math.floor(Math.random() * size)))
+
+  return R.join('')
 }
 
 /**
@@ -179,15 +194,15 @@ function compareObj(k, desc, type, sub) {
  * @param {*} fn
  */
 function sortObj(obj) {
-  const res = {};
+  const res = {}
 
   Object.keys(obj)
     .sort()
     .forEach(k => {
-      res[k] = obj[k];
-    });
+      res[k] = obj[k]
+    })
 
-  return res;
+  return res
 }
 
 /**
@@ -197,7 +212,7 @@ function sortObj(obj) {
 function serObj(obj) {
   return Object.keys(obj)
     .map(k => `${k}=${obj[k]}`)
-    .join('&');
+    .join('&')
 }
 
 /**
@@ -253,24 +268,25 @@ function delay(ms) {
 function promisify(f, type = 1) {
   return (...arg) =>
     new Promise((res, rej) => {
-      if (type == null || type === 1)
+      if (type == null || type === 1) {
         f(...arg, (err, rs) => {
           if (err) rej(err)
           else res(rs)
         })
-      else if (type === 0) f(...arg, rs => res(rs))
-      else if (type === 2)
+      } else if (type === 0) f(...arg, rs => res(rs))
+      else if (type === 2) {
         f(
           ...arg,
           rs => res(rs),
           rs => rej(rs || new Error('reject'))
         )
-      else if (type === 3)
+      } else if (type === 3) {
         f(
           ...arg,
           rs => res(rs),
           rs => rej(rs || new Error('reject'))
         )
+      }
     })
 }
 
@@ -281,9 +297,8 @@ function promisify(f, type = 1) {
  * @returns {string} 格式化后的字符串
  */
 function formatNum(num, cnt = 2) {
-  if (typeof num !== 'number' || isNaN(num)) {
-    return '0.00' // 如果不是数字，返回默认值
-  }
+  if (typeof num !== 'number' || isNaN(num)) return '0.00' // 如果不是数字，返回默认值
+
   return num.toLocaleString('en-US', {
     minimumFractionDigits: cnt, // 最少保留 2 位小数
     maximumFractionDigits: cnt, // 最多保留 2 位小数
@@ -298,30 +313,18 @@ function formatNum(num, cnt = 2) {
  *  false: false/0/非空对象、非空数组、值
  */
 function isEmpty(p) {
-  if (p === undefined || p === null || p === '') {
-    return true
-  }
+  if (p === undefined || p === null || p === '') return true
 
-  if (typeof p === 'string' && p.trim() === '') {
-    return true
-  }
+  if (typeof p === 'string' && p.trim() === '') return true
 
-  if (Array.isArray(p) && p.length === 0) {
-    return true
-  }
+  if (Array.isArray(p) && p.length === 0) return true
 
-  if (p instanceof Map && p.size === 0) {
-    return true
-  }
+  if (p instanceof Map && p.size === 0) return true
 
-  if (p instanceof Set && p.size === 0) {
-    return true
-  }
+  if (p instanceof Set && p.size === 0) return true
 
   // 检查普通空对象
-  if (typeof p === 'object' && p !== null && p.constructor === Object && Object.keys(p).length === 0) {
-    return true
-  }
+  if (typeof p === 'object' && p !== null && p.constructor === Object && Object.keys(p).length === 0) return true
 
   return false
 }
@@ -358,9 +361,7 @@ function isNumber(value) {
 function needParam(p, msg) {
   if (isEmpty(p)) throw new Err(Err.MissParam, msg)
 
-  if (Array.isArray(p)) {
-    if (p.some(m => isEmpty(m))) throw new Err(Err.MissParam, msg)
-  }
+  if (Array.isArray(p)) if (p.some(m => isEmpty(m))) throw new Err(Err.MissParam, msg)
 }
 
 /**
@@ -415,6 +416,10 @@ async function sign(r, secret, opts = {nonce: true}) {
 }
 
 export {
+  EMPTY_OBJ,
+  EMPTY_ARR,
+  NOOP,
+  NO,
   StringBuf,
   format,
   trimStart,
@@ -425,5 +430,13 @@ export {
   sortObj,
   serObj,
   setTitle,
-  toYuan, toFen, promisify, delay, formatNum, isNumber, isDate, needParam, sign
-};
+  toYuan,
+  toFen,
+  promisify,
+  delay,
+  formatNum,
+  isNumber,
+  isDate,
+  needParam,
+  sign,
+}
